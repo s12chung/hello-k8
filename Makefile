@@ -1,3 +1,25 @@
+build:
+	docker build -t hello-k8:v1.0 .
+
+apply:
+	minikube mount .:/dev-mount &>/dev/null &disown;
+	kubectl apply -f ./manifests/
+	@echo
+	@echo hello-k8 is being served at:
+	@echo $$(minikube service hello-k8 --url)
+
+# kubectl describe ...
+status:
+	kubectl get all
+
+clean:
+	pkill -f "minikube mount" || true
+	kubectl delete deployments.app --all
+	kubectl delete service --all
+
+exec-sh:
+	kubectl exec $(shell kubectl get pods -o=custom-columns=name:metadata.name | grep hello-k8) -ti ash
+
 run:
 	go install
 	$(GOPATH)/bin/hello-k8

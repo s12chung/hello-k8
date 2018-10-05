@@ -1,0 +1,42 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: hello-k8
+  labels:
+    app: hello
+spec:
+  template:
+    metadata:
+      labels:
+        app: hello
+        tier: web
+    spec:
+      containers:
+      - name: hello-k8
+        image: hello-k8:v1.0
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: dev-mount
+          mountPath: /go/src/github.com/s12chung/hello-k8
+      volumes:
+      - name: dev-mount
+        hostPath:
+          path: /dev-mount
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-k8
+  labels:
+    app: hello
+spec:
+  selector:
+    app: hello
+    tier: web
+  ports:
+  - port: 80
+    targetPort: 8080
+  type: LoadBalancer
