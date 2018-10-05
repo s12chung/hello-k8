@@ -1,2 +1,4 @@
+vendor/*
+
 # ignore IDE files
 .idea/*
