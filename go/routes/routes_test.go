@@ -5,11 +5,11 @@ import (
 	"testing"
 )
 
-func Test_getHome(t *testing.T) {
-	testServer, clean := NewRoutedServer()
+func Test_getPing(t *testing.T) {
+	testServer, clean := NewRoutedServer(t)
 	defer clean()
 
-	response, err := http.Get(testServer.URL)
+	response, err := http.Get(testServer.URL + "/ping")
 	if err != nil {
 		t.Error(err)
 	}
@@ -18,7 +18,7 @@ func Test_getHome(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	exp := `{ "cpu_used": 100 }`
+	exp := `{ "success": true }`
 	if got != exp {
 		t.Errorf("got: %v, exp: %v\n", got, exp)
 	}

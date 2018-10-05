@@ -7,15 +7,26 @@ apply:
 	@echo
 	@echo hello-k8 is being served at:
 	@echo $$(minikube service hello-k8 --url)
+	@echo
 
 # kubectl describe ...
 status:
 	kubectl get all
+	kubectl get pv
+	kubectl get pvc
 
 clean:
 	pkill -f "minikube mount" || true
 	kubectl delete deployments.app --all
 	kubectl delete service --all
+
+clean-all: clean
+	kubectl delete pvc --all
+	kubectl delete pv --all
+	kubectl delete secrets --all
+
+install:
+	dep ensure
 
 exec-sh:
 	kubectl exec $(shell kubectl get pods -o=custom-columns=name:metadata.name | grep hello-k8) -ti ash

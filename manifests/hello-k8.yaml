@@ -17,6 +17,12 @@ spec:
         imagePullPolicy: Never
         ports:
         - containerPort: 8080
+        env:
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres
+              key: password
         volumeMounts:
         - name: dev-mount
           mountPath: /go/src/github.com/s12chung/hello-k8
