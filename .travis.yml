@@ -1,0 +1,13 @@
+language: go
+go:
+  - "1.10.x"
+
+before_install:
+  - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | bash -s -- -b $GOPATH/bin v1.10.2
+
+script:
+  - make test-report
+  - make lint
+
+after_success:
+  - go get github.com/mattn/goveralls; $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci
