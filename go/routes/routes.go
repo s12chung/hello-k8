@@ -9,7 +9,7 @@ import (
 )
 
 func (router *Router) setRoutes() {
-	router.get("/ping", router.getPing)
+	router.mux.Get("/ping", router.getPing)
 }
 
 func (router *Router) getPing(writer http.ResponseWriter, request *http.Request) {

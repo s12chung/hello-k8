@@ -24,7 +24,6 @@ func NewServer(router *Router) (*httptest.Server, func()) {
 
 func NewRoutedServer(t *testing.T) (*httptest.Server, func()) {
 	router := DefaultRouter(t)
-	router.setDefaultRoutes()
 	router.setRoutes()
 	return NewServer(router)
 }
@@ -35,41 +34,6 @@ func StringBody(response *http.Response) (string, error) {
 		return "", err
 	}
 	return string(body), response.Body.Close()
-}
-
-func TestRouter_get(t *testing.T) {
-	router := DefaultRouter(t)
-	responseBody := `{ "cpu_used": 100 }`
-
-	router.get("/", func(writer http.ResponseWriter, request *http.Request) {
-		_, err := writer.Write([]byte(responseBody))
-		if err != nil {
-			t.Error(writer, err.Error(), http.StatusInternalServerError)
-		}
-	})
-
-	testServer, clean := NewServer(router)
-	defer clean()
-
-	response, err := http.Get(testServer.URL)
-	if err != nil {
-		t.Error(err)
-	}
-
-	got := response.Header.Get("Content-Type")
-	exp := "application/json"
-	if got != exp {
-		t.Errorf("got: %v, exp: %v\n", got, exp)
-	}
-
-	got, err = StringBody(response)
-	if err != nil {
-		t.Error(err)
-	}
-	exp = responseBody
-	if got != exp {
-		t.Errorf("got: %v, exp: %v\n", got, exp)
-	}
 }
 
 func Test_setDefaultRoutes(t *testing.T) {
