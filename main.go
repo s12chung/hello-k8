@@ -8,8 +8,7 @@ import (
 )
 
 func main() {
-	server := routes.NewServer()
-	err := server.Run()
+	err := routes.NewRouter().Run()
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)

@@ -1,11 +1,17 @@
+/*
+Package routes is where the routes are Set, also has a custom Router
+*/
 package routes
 
 import "net/http"
 
-func (server *Server) setRoutes() {
-	server.get("/", getHome)
+func (router *Router) setRoutes() {
+	router.get("/", getHome)
 }
 
 func getHome(writer http.ResponseWriter, request *http.Request) {
-	writer.Write([]byte(`{ "cpu_used": 100 }`))
+	_, err := writer.Write([]byte(`{ "cpu_used": 100 }`))
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+	}
 }

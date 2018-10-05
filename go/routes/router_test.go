@@ -7,19 +7,19 @@ import (
 	"testing"
 )
 
-func DefaultServer() *Server {
-	return NewServer()
+func DefaultRouter() *Router {
+	return NewRouter()
 }
 
-func NewTestServer(server *Server) (*httptest.Server, func()) {
-	testServer := httptest.NewServer(server.mux)
+func NewServer(router *Router) (*httptest.Server, func()) {
+	testServer := httptest.NewServer(router.mux)
 	return testServer, testServer.Close
 }
 
-func NewRoutedTestServer() (*httptest.Server, func()) {
-	server := DefaultServer()
+func NewRoutedServer() (*httptest.Server, func()) {
+	server := DefaultRouter()
 	server.setRoutes()
-	return NewTestServer(server)
+	return NewServer(server)
 }
 
 func StringBody(response *http.Response) (string, error) {
@@ -30,15 +30,18 @@ func StringBody(response *http.Response) (string, error) {
 	return string(body), response.Body.Close()
 }
 
-func TestServer_get(t *testing.T) {
-	server := DefaultServer()
+func TestRouter_get(t *testing.T) {
+	router := DefaultRouter()
 	responseBody := `{ "cpu_used": 100 }`
 
-	server.get("/", func(writer http.ResponseWriter, request *http.Request) {
-		writer.Write([]byte(responseBody))
+	router.get("/", func(writer http.ResponseWriter, request *http.Request) {
+		_, err := writer.Write([]byte(responseBody))
+		if err != nil {
+			t.Error(writer, err.Error(), http.StatusInternalServerError)
+		}
 	})
 
-	testServer, clean := NewTestServer(server)
+	testServer, clean := NewServer(router)
 	defer clean()
 
 	response, err := http.Get(testServer.URL)
