@@ -23,9 +23,10 @@ func NewServer(router *Router) (*httptest.Server, func()) {
 }
 
 func NewRoutedServer(t *testing.T) (*httptest.Server, func()) {
-	server := DefaultRouter(t)
-	server.setRoutes()
-	return NewServer(server)
+	router := DefaultRouter(t)
+	router.setDefaultRoutes()
+	router.setRoutes()
+	return NewServer(router)
 }
 
 func StringBody(response *http.Response) (string, error) {
