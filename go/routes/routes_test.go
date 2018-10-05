@@ -6,7 +6,7 @@ import (
 )
 
 func Test_getHome(t *testing.T) {
-	testServer, clean := NewRoutedTestServer()
+	testServer, clean := NewRoutedServer()
 	defer clean()
 
 	response, err := http.Get(testServer.URL)
