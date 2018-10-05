@@ -1,0 +1,42 @@
+# same as hello-k8.yaml, but without the dev-mount: https://github.com/kubernetes/minikube/issues/2575#issuecomment-414448160
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: hello-k8
+  labels:
+    app: hello
+spec:
+  template:
+    metadata:
+      labels:
+        app: hello
+        tier: web
+    spec:
+      containers:
+      - name: hello-k8
+        image: hello-k8:v1.0
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8080
+        env:
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres
+              key: password
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-k8
+  labels:
+    app: hello
+spec:
+  selector:
+    app: hello
+    tier: web
+  ports:
+  - port: 80
+    targetPort: 8080
+  type: LoadBalancer
