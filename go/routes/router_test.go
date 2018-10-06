@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/s12chung/hello-k8/go/database"
+	"github.com/s12chung/hello-k8/go/models"
 )
 
 func DefaultRouter(t *testing.T) *Router {
@@ -14,7 +15,15 @@ func DefaultRouter(t *testing.T) *Router {
 	if err != nil {
 		t.Error(err)
 	}
-	return NewRouter(db)
+	router := NewRouter(db)
+
+	err = models.DeleteAllMetrics(db)
+	if err != nil {
+		t.Error(err)
+	}
+
+	router.c = testClock
+	return router
 }
 
 func NewServer(router *Router) (*httptest.Server, func()) {
