@@ -26,7 +26,10 @@ func CreateMetrics(db *sql.DB, metrics []*Metric) error {
 	for _, metric := range metrics {
 		err := metric.Create(tx)
 		if err != nil {
-			tx.Rollback() // nolint:errcheck
+			cerr := tx.Rollback()
+			if cerr != nil {
+				log.Println(cerr)
+			}
 			return err
 		}
 	}
@@ -56,7 +59,7 @@ func AllMetrics(db *sql.DB) (metrics []*Metric, err error) {
 		metric := &Metric{}
 		err := rows.Scan(&metric.Time, &metric.NodeName, &metric.CPUUsed, &metric.MemUsed)
 		if err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
 		metrics = append(metrics, metric)
 	}

@@ -2,17 +2,14 @@ package main
 
 import (
 	"github.com/s12chung/hello-k8/go/database"
-	"log"
-	"os"
-
 	"github.com/s12chung/hello-k8/go/routes"
+	"log"
 )
 
 func main() {
 	err := run()
 	if err != nil {
 		log.Fatal(err)
-		os.Exit(1)
 	}
 }
 

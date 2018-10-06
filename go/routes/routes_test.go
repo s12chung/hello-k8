@@ -39,7 +39,7 @@ func brokenDbServer(t *testing.T) (*httptest.Server, func()) {
 	return NewServer(router)
 }
 
-func Test_getPing(t *testing.T) {
+func TestRouter_getPing(t *testing.T) {
 	routedServer := func(t *testing.T) (*httptest.Server, func()) {
 		testServer, _, clean := NewRoutedServer(t)
 		return testServer, clean
@@ -79,7 +79,7 @@ func Test_getPing(t *testing.T) {
 	}
 }
 
-func Test_postNodeMetric(t *testing.T) {
+func TestRouter_postNodeMetric(t *testing.T) {
 	testServer, _, clean := NewRoutedServer(t)
 	defer clean()
 
@@ -114,7 +114,7 @@ func Test_postNodeMetric(t *testing.T) {
 	}
 }
 
-func Test_postNodeMetricBadReqBody(t *testing.T) {
+func TestRouter_postNodeMetricBadReqBody(t *testing.T) {
 	testServer, _, clean := NewRoutedServer(t)
 	defer clean()
 
@@ -125,7 +125,7 @@ func Test_postNodeMetricBadReqBody(t *testing.T) {
 	test.AssertLabel(t, "response.StatusCode", response.StatusCode, http.StatusBadRequest)
 }
 
-func Test_getNodeMetricsAverage(t *testing.T) {
+func TestRouter_getNodeMetricsAverage(t *testing.T) {
 	testServer, router, clean := NewRoutedServer(t)
 	defer clean()
 
