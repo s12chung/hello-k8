@@ -8,8 +8,6 @@ CREATE TABLE metrics_development (
   mem_used REAL NOT NULL
 );
 
-CREATE UNIQUE INDEX names_idx ON metrics_development (node_name, process_name);
-
 CREATE TABLE metrics_test (
   LIKE metrics_development
   INCLUDING ALL

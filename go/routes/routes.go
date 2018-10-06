@@ -17,15 +17,15 @@ func (router *Router) setRoutes() {
 	router.mux.Get("/nodes/{nodeName}/metrics/average", router.getNodeMetricsAverage)
 }
 
-type metricRequest struct {
+type metricRequestResponse struct {
 	Timeslice int     `json:"timeslice"`
-	CPUUSed   float32 `json:"cpu_used"`
+	CPUUsed   float32 `json:"cpu_used"`
 	MemUsed   float32 `json:"mem_used"`
 }
 
 func (router *Router) postNodeMetric(writer http.ResponseWriter, request *http.Request) {
 	router.withTx(writer, func(tx *sql.Tx) bool {
-		rMetric := &metricRequest{}
+		rMetric := &metricRequestResponse{}
 		err := unmarkshallJSONBody(request.Body, rMetric)
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
@@ -36,7 +36,7 @@ func (router *Router) postNodeMetric(writer http.ResponseWriter, request *http.R
 			Time:        router.c.Now(),
 			NodeName:    chi.URLParam(request, "nodeName"),
 			ProcessName: "",
-			CPUUsed:     rMetric.CPUUSed,
+			CPUUsed:     rMetric.CPUUsed,
 			MemUsed:     rMetric.MemUsed,
 		}
 		err = metric.Create(tx)
@@ -47,6 +47,34 @@ func (router *Router) postNodeMetric(writer http.ResponseWriter, request *http.R
 
 		writeJSON(writer, metric)
 		return true
+	})
+}
+
+func (router *Router) getNodeMetricsAverage(writer http.ResponseWriter, request *http.Request) {
+	metrics, err := models.AllMetrics(router.db)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var previousMetric *models.Metric
+	var weightedCPUSum float64
+	var weightedMemSum float64
+	var totalSeconds int
+	for _, metric := range metrics {
+		if previousMetric != nil {
+			seconds := int(models.RoundSecond(metric.Time).Sub(models.RoundSecond(previousMetric.Time)).Seconds())
+			totalSeconds += seconds
+			weightedCPUSum += float64(seconds) * float64((metric.CPUUsed+previousMetric.CPUUsed)/2)
+			weightedMemSum += float64(seconds) * float64((metric.MemUsed+previousMetric.MemUsed)/2)
+		}
+		previousMetric = metric
+	}
+
+	writeJSON(writer, &metricRequestResponse{
+		0,
+		float32(weightedCPUSum / float64(totalSeconds)),
+		float32(weightedMemSum / float64(totalSeconds)),
 	})
 }
 

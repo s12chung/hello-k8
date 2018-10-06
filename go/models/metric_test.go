@@ -2,6 +2,8 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
+	"sort"
 	"testing"
 	"time"
 
@@ -32,6 +34,44 @@ func DefaultTx(t *testing.T) (*sql.DB, *sql.Tx) {
 		t.Error(err)
 	}
 	return db, tx
+}
+
+func TestAllMetricsSorted(t *testing.T) {
+	var metrics []*Metric
+	for i := 0; i < 10; i++ {
+		for _, j := range []int{i, -i} {
+			metrics = append(metrics, &Metric{
+				time.Now().AddDate(0, 0, j),
+				"my_node",
+				"",
+				10,
+				20,
+			})
+		}
+	}
+
+	db := DefaultDb(t)
+	err := CreateMetrics(db, metrics)
+	if err != nil {
+		t.Error(err)
+	}
+
+	gotMetrics, err := AllMetrics(db)
+	if err != nil {
+		t.Error(err)
+	}
+
+	test.AssertLabel(t, "len(gotMetrics)", len(gotMetrics), len(metrics))
+
+	sort.Slice(metrics, func(i, j int) bool {
+		return metrics[i].Time.Before(metrics[j].Time)
+	})
+
+	for i, metric := range metrics {
+		if !gotMetrics[i].Time.Equal(RoundSecond(metric.Time)) {
+			t.Error(test.AssertLabelString(fmt.Sprintf("not sorted at %v", i), gotMetrics[i], metric))
+		}
+	}
 }
 
 func TestMetric_Create(t *testing.T) {

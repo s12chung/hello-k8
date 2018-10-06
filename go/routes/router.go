@@ -42,6 +42,7 @@ func (router *Router) withTx(writer http.ResponseWriter, callback func(tx *sql.T
 
 	success := callback(tx)
 	if !success {
+		tx.Rollback() // nolint:errcheck
 		return
 	}
 

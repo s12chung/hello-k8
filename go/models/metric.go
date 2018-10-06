@@ -17,15 +17,32 @@ type Metric struct {
 	MemUsed     float32   `json:"mem_used"`
 }
 
+// CreateMetrics the metrics in the db (used for testing)
+func CreateMetrics(db *sql.DB, metrics []*Metric) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+
+	for _, metric := range metrics {
+		err := metric.Create(tx)
+		if err != nil {
+			tx.Rollback() // nolint:errcheck
+			return err
+		}
+	}
+	return tx.Commit()
+}
+
 // DeleteAllMetrics deletes all the metrics in the db (used for testing)
 func DeleteAllMetrics(db *sql.DB) error {
 	_, err := db.Exec(fmt.Sprintf(`TRUNCATE %v`, database.TableName("metrics")))
 	return err
 }
 
-// AllMetrics returns all the metrics in the db (used for testing)
+// AllMetrics returns all the metrics in the db
 func AllMetrics(db *sql.DB) (metrics []*Metric, err error) {
-	rows, err := db.Query(fmt.Sprintf(`SELECT * FROM %v;`, database.TableName("metrics")))
+	rows, err := db.Query(fmt.Sprintf(`SELECT * FROM %v ORDER BY time;`, database.TableName("metrics")))
 	if err != nil {
 		return nil, err
 	}

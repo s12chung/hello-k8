@@ -31,10 +31,11 @@ func NewServer(router *Router) (*httptest.Server, func()) {
 	return testServer, testServer.Close
 }
 
-func NewRoutedServer(t *testing.T) (*httptest.Server, func()) {
+func NewRoutedServer(t *testing.T) (*httptest.Server, *Router, func()) {
 	router := DefaultRouter(t)
 	router.setRoutes()
-	return NewServer(router)
+	server, clean := NewServer(router)
+	return server, router, clean
 }
 
 func StringBody(response *http.Response) (string, error) {
@@ -46,7 +47,7 @@ func StringBody(response *http.Response) (string, error) {
 }
 
 func Test_setDefaultRoutes(t *testing.T) {
-	testServer, clean := NewRoutedServer(t)
+	testServer, _, clean := NewRoutedServer(t)
 	defer clean()
 
 	response, err := http.Get(testServer.URL)
