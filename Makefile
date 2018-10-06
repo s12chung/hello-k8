@@ -53,3 +53,17 @@ test-ci:
 
 test-report: install
 	go test -v -covermode=atomic -coverprofile=coverage.out ./go/...
+
+DB_STRING := "user=postgres password=$(POSTGRES_PASSWORD) dbname=postgres host=$(POSTGRES_SERVICE_HOST) port=$(POSTGRES_SERVICE_PORT) sslmode=disable"
+
+db-up:
+	goose -dir ./migrations postgres $(DB_STRING) up
+
+db-down:
+	goose -dir ./migrations postgres $(DB_STRING) down
+
+db-redo:
+	goose -dir ./migrations postgres $(DB_STRING) redo
+
+db-status:
+	goose -dir ./migrations postgres $(DB_STRING) status
