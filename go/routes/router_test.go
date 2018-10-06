@@ -46,6 +46,18 @@ func StringBody(response *http.Response) (string, error) {
 	return string(body), response.Body.Close()
 }
 
+func TestRouter_server(t *testing.T) {
+	router := DefaultRouter(t)
+	server := router.server()
+
+	if server.Handler != router.mux {
+		t.Error("server.Handler != router.mux")
+	}
+	if server.Addr != ":8080" {
+		t.Error(`server.Addr != ":8080"`)
+	}
+}
+
 func Test_setDefaultRoutes(t *testing.T) {
 	testServer, _, clean := NewRoutedServer(t)
 	defer clean()

@@ -26,11 +26,16 @@ func NewRouter(db *sql.DB) *Router {
 
 // Run sets the routes defined in the router and runs/serves the routes
 func (router *Router) Run() error {
-	router.setRoutes()
+	server := router.server()
+	log.Printf("Router listening on port %s\n", server.Addr)
+	return server.ListenAndServe()
+}
 
+func (router *Router) server() *http.Server {
+	router.mux = chi.NewRouter()
+	router.setRoutes()
 	port := "8080"
-	log.Printf("Router listening on port %s\n", port)
-	return http.ListenAndServe(":"+port, router.mux)
+	return &http.Server{Addr: ":" + port, Handler: router.mux}
 }
 
 func (router *Router) withTx(writer http.ResponseWriter, callback func(tx *sql.Tx) bool) {
