@@ -114,6 +114,17 @@ func Test_postNodeMetric(t *testing.T) {
 	}
 }
 
+func Test_postNodeMetricBadReqBody(t *testing.T) {
+	testServer, _, clean := NewRoutedServer(t)
+	defer clean()
+
+	response, err := http.Post(testServer.URL+"/nodes/blah/metrics", jsonContentType, bytes.NewBuffer([]byte(`not_json`)))
+	if err != nil {
+		t.Error(err)
+	}
+	test.AssertLabel(t, "response.StatusCode", response.StatusCode, http.StatusBadRequest)
+}
+
 func Test_getNodeMetricsAverage(t *testing.T) {
 	testServer, router, clean := NewRoutedServer(t)
 	defer clean()

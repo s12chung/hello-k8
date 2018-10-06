@@ -15,6 +15,13 @@ func SetEnv(t *testing.T, key, value string) string {
 	return old
 }
 
+func TestDefaultDataBase(t *testing.T) {
+	_, err := DefaultDataBase()
+	if err != nil {
+		t.Error(err)
+	}
+}
+
 func TestDefaultDataBaseConfig(t *testing.T) {
 	// docker env has ENV set
 	oldUser := SetEnv(t, "POSTGRES_USER", "")
