@@ -10,11 +10,10 @@ import (
 
 // Metric is a metric at a certain Time
 type Metric struct {
-	Time        time.Time `json:"time"`
-	NodeName    string    `json:"node_name"`
-	ProcessName string    `json:"process_name"`
-	CPUUsed     float32   `json:"cpu_used"`
-	MemUsed     float32   `json:"mem_used"`
+	Time     time.Time `json:"time"`
+	NodeName string    `json:"node_name"`
+	CPUUsed  int       `json:"cpu_used"`
+	MemUsed  int       `json:"mem_used"`
 }
 
 // CreateMetrics the metrics in the db (used for testing)
@@ -55,7 +54,7 @@ func AllMetrics(db *sql.DB) (metrics []*Metric, err error) {
 
 	for rows.Next() {
 		metric := &Metric{}
-		err := rows.Scan(&metric.Time, &metric.NodeName, &metric.ProcessName, &metric.CPUUsed, &metric.MemUsed)
+		err := rows.Scan(&metric.Time, &metric.NodeName, &metric.CPUUsed, &metric.MemUsed)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -72,11 +71,10 @@ func (metric *Metric) Create(tx *sql.Tx) error {
 
 func (metric *Metric) createString() string {
 	return fmt.Sprintf(
-		`INSERT INTO %v VALUES ('%v', '%v', '%v', %v, %v);`,
+		`INSERT INTO %v VALUES ('%v', '%v', %v, %v);`,
 		database.TableName("metrics"),
 		metric.Time.Format(time.RFC3339),
 		metric.NodeName,
-		metric.ProcessName,
 		metric.CPUUsed,
 		metric.MemUsed,
 	)

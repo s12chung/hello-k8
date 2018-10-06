@@ -43,7 +43,6 @@ func TestAllMetricsSorted(t *testing.T) {
 			metrics = append(metrics, &Metric{
 				time.Now().AddDate(0, 0, j),
 				"my_node",
-				"",
 				10,
 				20,
 			})
@@ -79,7 +78,6 @@ func TestMetric_Create(t *testing.T) {
 	metric := &Metric{
 		time.Now(),
 		"my_node",
-		"",
 		10,
 		20,
 	}

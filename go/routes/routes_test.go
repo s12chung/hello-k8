@@ -85,7 +85,6 @@ func Test_postNodeMetric(t *testing.T) {
 
 	var err error
 	reqMetric := &metricRequestResponse{
-		10,
 		20,
 		30,
 	}
@@ -120,7 +119,7 @@ func Test_getNodeMetricsAverage(t *testing.T) {
 	defer clean()
 
 	ts := []time.Duration{0, 10, 30, 60}
-	useds := []float32{0, 20, 60, 0}
+	useds := []int{0, 20, 60, 0}
 
 	var metrics []*models.Metric
 	for i := 0; i < len(ts); i++ {
@@ -150,7 +149,6 @@ func Test_getNodeMetricsAverage(t *testing.T) {
 		t.Error(err)
 	}
 	exp := &metricRequestResponse{
-		0,
 		30,
 		70,
 	}

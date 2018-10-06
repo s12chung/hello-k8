@@ -18,9 +18,8 @@ func (router *Router) setRoutes() {
 }
 
 type metricRequestResponse struct {
-	Timeslice int     `json:"timeslice"`
-	CPUUsed   float32 `json:"cpu_used"`
-	MemUsed   float32 `json:"mem_used"`
+	CPUUsed int `json:"cpu_used"`
+	MemUsed int `json:"mem_used"`
 }
 
 func (router *Router) postNodeMetric(writer http.ResponseWriter, request *http.Request) {
@@ -33,11 +32,10 @@ func (router *Router) postNodeMetric(writer http.ResponseWriter, request *http.R
 		}
 
 		metric := models.Metric{
-			Time:        router.c.Now(),
-			NodeName:    chi.URLParam(request, "nodeName"),
-			ProcessName: "",
-			CPUUsed:     rMetric.CPUUsed,
-			MemUsed:     rMetric.MemUsed,
+			Time:     router.c.Now(),
+			NodeName: chi.URLParam(request, "nodeName"),
+			CPUUsed:  rMetric.CPUUsed,
+			MemUsed:  rMetric.MemUsed,
 		}
 		err = metric.Create(tx)
 		if err != nil {
@@ -58,23 +56,22 @@ func (router *Router) getNodeMetricsAverage(writer http.ResponseWriter, request 
 	}
 
 	var previousMetric *models.Metric
-	var weightedCPUSum float64
-	var weightedMemSum float64
-	var totalSeconds int
+	var weightedCPUSum int64
+	var weightedMemSum int64
+	var totalSeconds int64
 	for _, metric := range metrics {
 		if previousMetric != nil {
-			seconds := int(models.RoundSecond(metric.Time).Sub(models.RoundSecond(previousMetric.Time)).Seconds())
+			seconds := int64(models.RoundSecond(metric.Time).Sub(models.RoundSecond(previousMetric.Time)).Seconds())
 			totalSeconds += seconds
-			weightedCPUSum += float64(seconds) * float64((metric.CPUUsed+previousMetric.CPUUsed)/2)
-			weightedMemSum += float64(seconds) * float64((metric.MemUsed+previousMetric.MemUsed)/2)
+			weightedCPUSum += seconds * int64((metric.CPUUsed+previousMetric.CPUUsed)/2)
+			weightedMemSum += seconds * int64((metric.MemUsed+previousMetric.MemUsed)/2)
 		}
 		previousMetric = metric
 	}
 
 	writeJSON(writer, &metricRequestResponse{
-		0,
-		float32(weightedCPUSum / float64(totalSeconds)),
-		float32(weightedMemSum / float64(totalSeconds)),
+		int(weightedCPUSum / totalSeconds),
+		int(weightedMemSum / totalSeconds),
 	})
 }
 
