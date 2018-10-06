@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.com/s12chung/hello-k8.svg?branch=master)](https://travis-ci.com/s12chung/hello-k8)
 [![Go Report Card](https://goreportcard.com/badge/github.com/s12chung/hello-k8)](https://goreportcard.com/report/github.com/s12chung/hello-k8)
 
-A small kubernetes app demonstrating build in about 6 hours---a part of an interview process.
+A small kubernetes app demonstrating built in about 6 hours---a part of an interview process.
 
 ## Background
 
@@ -63,7 +63,7 @@ I intended to do the following if I had time:
 
 - Use [xeipuuv/gojsonschema](https://github.com/xeipuuv/gojsonschema) to validate my JSON requests and responses
 - Use [google/jsonapi](https://github.com/google/jsonapi) to define a more complex, but flexible API format
-- Setup a Dockerfile for production (with minimal installation and runs automatically)
+- Setup a Dockerfile for production (with minimal image via using Docker's `COPY`  and runs automatically)
 
 ## Setup
 
