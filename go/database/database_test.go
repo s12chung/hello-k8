@@ -1,6 +1,7 @@
 package database
 
 import (
+	"github.com/s12chung/gostatic/go/test"
 	"os"
 	"testing"
 )
@@ -12,6 +13,13 @@ func SetEnv(t *testing.T, key, value string) string {
 		t.Error(err)
 	}
 	return old
+}
+
+func TestDefaultDataBase(t *testing.T) {
+	_, err := DefaultDataBase()
+	if err != nil {
+		t.Error(err)
+	}
 }
 
 func TestDefaultDataBaseConfig(t *testing.T) {
@@ -53,4 +61,8 @@ func TestDefaultDataBaseConfig(t *testing.T) {
 	SetEnv(t, "POSTGRES_PASSWORD", oldPassword)
 	SetEnv(t, "POSTGRES_SERVICE_HOST", oldHost)
 	SetEnv(t, "POSTGRES_SERVICE_PORT", oldPort)
+}
+
+func TestTableName(t *testing.T) {
+	test.AssertLabel(t, "result", TableName("blah"), "blah_test")
 }

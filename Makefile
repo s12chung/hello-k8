@@ -48,8 +48,23 @@ test-apply:
 
 # Using cat with coverage.out instead of kubectl cp because kubectl cp can't find the file for some reason in Travis CI
 test-ci:
+	kubectl exec $(shell kubectl get pods -o=custom-columns=name:metadata.name | grep hello-k8) -ti make db-up
 	kubectl exec $(shell kubectl get pods -o=custom-columns=name:metadata.name | grep hello-k8) -ti make test-report
 	kubectl exec $(shell kubectl get pods -o=custom-columns=name:metadata.name | grep hello-k8) -ti cat coverage.out > coverage.out
 
 test-report: install
 	go test -v -covermode=atomic -coverprofile=coverage.out ./go/...
+
+DB_STRING := "user=postgres password=$(POSTGRES_PASSWORD) dbname=postgres host=$(POSTGRES_SERVICE_HOST) port=$(POSTGRES_SERVICE_PORT) sslmode=disable"
+
+db-up:
+	goose -dir ./migrations postgres $(DB_STRING) up
+
+db-down:
+	goose -dir ./migrations postgres $(DB_STRING) down
+
+db-redo:
+	goose -dir ./migrations postgres $(DB_STRING) redo
+
+db-status:
+	goose -dir ./migrations postgres $(DB_STRING) status

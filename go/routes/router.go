@@ -4,25 +4,28 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+
+	"github.com/go-chi/chi"
 )
 
 // Router is a custom server to set routes on
 type Router struct {
-	mux *http.ServeMux
+	mux *chi.Mux
 	db  *sql.DB
+	c   clock
 }
 
 // NewRouter returns a new Router
 func NewRouter(db *sql.DB) *Router {
 	return &Router{
-		mux: http.NewServeMux(),
+		mux: chi.NewRouter(),
 		db:  db,
+		c:   &realClock{},
 	}
 }
 
 // Run sets the routes defined in the router and runs/serves the routes
 func (router *Router) Run() error {
-	router.setDefaultRoutes()
 	router.setRoutes()
 
 	port := "8080"
@@ -30,18 +33,22 @@ func (router *Router) Run() error {
 	return http.ListenAndServe(":"+port, router.mux)
 }
 
-func (router *Router) setDefaultRoutes() {
-	router.mux.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
-		http.Error(writer, "Not Found", http.StatusNotFound)
-	})
-}
+func (router *Router) withTx(writer http.ResponseWriter, callback func(tx *sql.Tx) bool) {
+	tx, err := router.db.Begin()
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-func (router *Router) get(pattern string, handler func(http.ResponseWriter, *http.Request)) {
-	router.mux.HandleFunc(pattern, func(writer http.ResponseWriter, request *http.Request) {
-		writer.Header().Set("Content-Type", "application/json")
+	success := callback(tx)
+	if !success {
+		tx.Rollback() // nolint:errcheck
+		return
+	}
 
-		if request.Method == http.MethodGet {
-			handler(writer, request)
-		}
-	})
+	err = tx.Commit()
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }

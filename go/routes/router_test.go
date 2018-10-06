@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/s12chung/hello-k8/go/database"
+	"github.com/s12chung/hello-k8/go/models"
 )
 
 func DefaultRouter(t *testing.T) *Router {
@@ -14,7 +15,15 @@ func DefaultRouter(t *testing.T) *Router {
 	if err != nil {
 		t.Error(err)
 	}
-	return NewRouter(db)
+	router := NewRouter(db)
+
+	err = models.DeleteAllMetrics(db)
+	if err != nil {
+		t.Error(err)
+	}
+
+	router.c = testClock
+	return router
 }
 
 func NewServer(router *Router) (*httptest.Server, func()) {
@@ -22,11 +31,11 @@ func NewServer(router *Router) (*httptest.Server, func()) {
 	return testServer, testServer.Close
 }
 
-func NewRoutedServer(t *testing.T) (*httptest.Server, func()) {
+func NewRoutedServer(t *testing.T) (*httptest.Server, *Router, func()) {
 	router := DefaultRouter(t)
-	router.setDefaultRoutes()
 	router.setRoutes()
-	return NewServer(router)
+	server, clean := NewServer(router)
+	return server, router, clean
 }
 
 func StringBody(response *http.Response) (string, error) {
@@ -37,43 +46,8 @@ func StringBody(response *http.Response) (string, error) {
 	return string(body), response.Body.Close()
 }
 
-func TestRouter_get(t *testing.T) {
-	router := DefaultRouter(t)
-	responseBody := `{ "cpu_used": 100 }`
-
-	router.get("/", func(writer http.ResponseWriter, request *http.Request) {
-		_, err := writer.Write([]byte(responseBody))
-		if err != nil {
-			t.Error(writer, err.Error(), http.StatusInternalServerError)
-		}
-	})
-
-	testServer, clean := NewServer(router)
-	defer clean()
-
-	response, err := http.Get(testServer.URL)
-	if err != nil {
-		t.Error(err)
-	}
-
-	got := response.Header.Get("Content-Type")
-	exp := "application/json"
-	if got != exp {
-		t.Errorf("got: %v, exp: %v\n", got, exp)
-	}
-
-	got, err = StringBody(response)
-	if err != nil {
-		t.Error(err)
-	}
-	exp = responseBody
-	if got != exp {
-		t.Errorf("got: %v, exp: %v\n", got, exp)
-	}
-}
-
 func Test_setDefaultRoutes(t *testing.T) {
-	testServer, clean := NewRoutedServer(t)
+	testServer, _, clean := NewRoutedServer(t)
 	defer clean()
 
 	response, err := http.Get(testServer.URL)

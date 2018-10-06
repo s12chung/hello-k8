@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"flag"
 	"fmt"
 	"os"
 
@@ -33,4 +34,16 @@ func DefaultDataBase() (*sql.DB, error) {
 		return nil, err
 	}
 	return db, nil
+}
+
+// IsTest is true, if the Go code is within `go test`
+// https://stackoverflow.com/questions/14249217/how-do-i-know-im-running-within-go-test
+var IsTest = flag.Lookup("test.v") != nil
+
+// TableName returns the name of the table for the right environment (test and development)
+func TableName(name string) string {
+	if IsTest {
+		return fmt.Sprintf("%v_test", name)
+	}
+	return fmt.Sprintf("%v_development", name)
 }
